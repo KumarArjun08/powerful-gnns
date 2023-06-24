@@ -3,6 +3,30 @@ import numpy as np
 import random
 import torch
 from sklearn.model_selection import StratifiedKFold
+import coarsening
+# data=load_data('MUTAG',True)
+def coarsen_dataset(g_list):
+    g=0
+    g_mat=[]
+    Node_tag_list=[]
+    g_list2=[]
+    while g < len(g_list):
+        adj_matrix=nx.adjacency_matrix(g_list[g].g).toarray()
+        adj_matrix=torch.Tensor(adj_matrix)
+        # print(adj_matrix)
+        X=np.array(g_list[g].node_tags).reshape(len(g_list[g].node_tags),1)
+        X=torch.tensor(X)
+        adj_matrix,X2=coarsening.coarsening(adj_matrix,X)
+        adj_matrix=adj_matrix.numpy()
+        grap=nx.from_numpy_array(adj_matrix)
+        g_mat.append(grap)
+        X2=X2.reshape(1,len(X2))
+        X2=X2.tolist()
+        Node_tag_list.append(X2[0])
+        
+        g_list2.append(S2VGraph(grap,g_list[g].label,X2[0]))
+        g+=1
+    return g_list2
 
 class S2VGraph(object):
     def __init__(self, g, label, node_tags=None, node_features=None):
@@ -80,7 +104,9 @@ def load_data(dataset, degree_as_tag):
             assert len(g) == n
 
             g_list.append(S2VGraph(g, l, node_tags))
-
+            print(type(node_tags))
+    g_list=coarsen_dataset(g_list)
+    print(g_list[0].node_tags)
     #add labels and edge_mat       
     for g in g_list:
         g.neighbors = [[] for i in range(len(g.g))]

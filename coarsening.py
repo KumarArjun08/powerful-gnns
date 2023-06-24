@@ -296,13 +296,13 @@ def coarsening(adj,X):
     try:
         X2,C2=experiment(lambda_param,beta_param,alpha_param,gamma_param,C,X_tilde,theta,X1,thresh)
     except:
-        return adj
+        return [adj,X]
     C_tr=torch.transpose(C2,0,1)
     theta_c=C_tr@theta@C2
     adjtemp = -theta_c
     for i in range(adjtemp.shape[0]):
         adjtemp[i,i]=0
-    adjtemp[adjtemp<0.2]=0
+    adjtemp[adjtemp<0.01]=0
     # temp = dense_to_sparse(adjtemp)
     # edge_list_temp = temp[0]
     # number_of_edges = edge_list_temp.shape[1]
@@ -314,7 +314,7 @@ def coarsening(adj,X):
     #             coo[0].append(i)
     #             coo[1].append(j)
     # d = Data(x = X2,edge_index = torch.LongTensor(coo))
-    return temp
+    return [adjtemp,X2]
 
 if __name__=="__main__":
     m = Chem.MolFromSmiles("COc1cc(C=O)cc2c1[C@H](COC(N)=O)[C@]1(OC(C)=O)ON2C[C@H]2[C@@H]1N2C(C)=O")
