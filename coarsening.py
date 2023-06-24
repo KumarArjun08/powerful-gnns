@@ -264,19 +264,19 @@ def experiment(lambda_param,beta_param,alpha_param,gamma_param,C,X_tilde,theta,X
       return X_tilde,C
 
 
-def coarsening(obj):
-    adj=to_dense_adj(obj.edge_index)
-    adj=adj[0]
-    edge_list = obj.edge_index
-    NO_OF_EDGES = edge_list.shape[1]
-    X = obj.x
-    X = X.to_dense()
+def coarsening(adj,X):
+    # adj=to_dense_adj(obj.edge_index)
+    # adj=adj[0]
+    # edge_list = obj.edge_index
+    # NO_OF_EDGES = edge_list.shape[1]
+    # X = obj.x
+    # X = X.to_dense()
     N = X.shape[0]
     NO_OF_CLASSES = 5
 
 
     theta = get_laplacian(adj)
-    features = X.numpy()
+    features = X
     NO_OF_NODES = X.shape[0]
     # NO_OF_CLASSES =  5
     X1=X.type(torch.FloatTensor)
@@ -296,25 +296,25 @@ def coarsening(obj):
     try:
         X2,C2=experiment(lambda_param,beta_param,alpha_param,gamma_param,C,X_tilde,theta,X1,thresh)
     except:
-        return obj
+        return adj
     C_tr=torch.transpose(C2,0,1)
     theta_c=C_tr@theta@C2
     adjtemp = -theta_c
     for i in range(adjtemp.shape[0]):
         adjtemp[i,i]=0
     adjtemp[adjtemp<0.2]=0
-    temp = dense_to_sparse(adjtemp)
-    edge_list_temp = temp[0]
-    number_of_edges = edge_list_temp.shape[1]
-    coo = [[], []]
-    for i in range(len(adjtemp)):
-        for j in range(len(adjtemp[i])):
-            # for our purposes, say there is an edge if the value >0
-            if adjtemp[i][j] >0:
-                coo[0].append(i)
-                coo[1].append(j)
-    d = Data(x = X2,edge_index = torch.LongTensor(coo))
-    return d
+    # temp = dense_to_sparse(adjtemp)
+    # edge_list_temp = temp[0]
+    # number_of_edges = edge_list_temp.shape[1]
+    # coo = [[], []]
+    # for i in range(len(adjtemp)):
+    #     for j in range(len(adjtemp[i])):
+    #         # for our purposes, say there is an edge if the value >0
+    #         if adjtemp[i][j] >0:
+    #             coo[0].append(i)
+    #             coo[1].append(j)
+    # d = Data(x = X2,edge_index = torch.LongTensor(coo))
+    return temp
 
 if __name__=="__main__":
     m = Chem.MolFromSmiles("COc1cc(C=O)cc2c1[C@H](COC(N)=O)[C@]1(OC(C)=O)ON2C[C@H]2[C@@H]1N2C(C)=O")
